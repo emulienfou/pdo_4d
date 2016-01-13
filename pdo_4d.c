@@ -49,7 +49,11 @@ static unsigned char pdo_4d_logo[] = {
 }; 
 /* }}} */
 /* {{{ pdo_4d_functions[] */
+#if PHP_VERSION_ID < 50400
 function_entry pdo_4d_functions[] = {
+#else
+zend_function_entry pdo_4d_functions[] = {
+#endif
 	{ NULL, NULL, NULL }
 };
 /* }}} */
