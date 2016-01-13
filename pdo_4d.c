@@ -41,7 +41,9 @@
 
 /* {{{ phpinfo logo definitions */
 
+#if PHP_VERSION_ID < 50500
 #include "php_logos.h"
+#endif
 
 
 static unsigned char pdo_4d_logo[] = {
@@ -91,7 +93,9 @@ PHP_INI_END()
 /* {{{ PHP_MINIT_FUNCTION */
 PHP_MINIT_FUNCTION(pdo_4d)
 {
+#if PHP_VERSION_ID < 50500
 	php_register_info_logo("PDO_4D_LOGO_ID", "", pdo_4d_logo, 778);
+#endif
 	REGISTER_INI_ENTRIES();
 	/* add your stuff here */
 	
@@ -112,7 +116,9 @@ PHP_MINIT_FUNCTION(pdo_4d)
 /* {{{ PHP_MSHUTDOWN_FUNCTION */
 PHP_MSHUTDOWN_FUNCTION(pdo_4d)
 {
+#if PHP_VERSION_ID < 50500
 	php_unregister_info_logo("PDO_4D_LOGO_ID");
+#endif
 	
 	php_pdo_unregister_driver(&pdo_4d_driver);
     UNREGISTER_INI_ENTRIES();
