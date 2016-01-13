@@ -1,0 +1,7 @@
+#! /bin/sh
+#
+# Created by configure
+
+'./configure' \
+'--with-pdo-4d' \
+"$@"
