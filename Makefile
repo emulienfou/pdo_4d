@@ -4,8 +4,8 @@ top_srcdir = /home/edv-administrator/pdo4d
 top_builddir = /home/edv-administrator/pdo4d
 EGREP = /bin/grep -E
 SED = /bin/sed
-CONFIGURE_COMMAND = './configure' '--with-pdo-4d'
-CONFIGURE_OPTIONS = '--with-pdo-4d'
+CONFIGURE_COMMAND = './configure' '--with-pdo_4d'
+CONFIGURE_OPTIONS = '--with-pdo_4d'
 SHLIB_SUFFIX_NAME = so
 SHLIB_DL_SUFFIX_NAME = so
 ZEND_EXT_TYPE = zend_extension
@@ -31,11 +31,11 @@ CPPFLAGS = -DHAVE_CONFIG_H
 CXX =
 CXXFLAGS =
 CXXFLAGS_CLEAN = $(CXXFLAGS)
-EXTENSION_DIR = /usr/lib/php5/20090626+lfs
+EXTENSION_DIR = /usr/lib/php5/20121212+lfs
 PHP_EXECUTABLE = /usr/bin/php
 EXTRA_LDFLAGS =
 EXTRA_LIBS =
-INCLUDES = -I/usr/include/php5 -I/usr/include/php5/main -I/usr/include/php5/TSRM -I/usr/include/php5/Zend -I/usr/include/php5/ext -I/usr/include/php5/ext/date/lib -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -I/usr/include/php/ext -I/usr/include/php/ext/pdo -I./lib4d_sql
+INCLUDES = -I/usr/include/php5 -I/usr/include/php5/main -I/usr/include/php5/TSRM -I/usr/include/php5/Zend -I/usr/include/php5/ext -I/usr/include/php5/ext/date/lib -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -I./lib4d_sql -I/pdo
 LFLAGS =
 LDFLAGS =
 SHARED_LIBTOOL =
@@ -54,8 +54,10 @@ all: $(all_targets)
 	@echo "Build complete."
 	@echo "Don't forget to run 'make test'."
 	@echo
-	
+
 build-modules: $(PHP_MODULES) $(PHP_ZEND_EX)
+
+build-binaries: $(PHP_BINARIES)
 
 libphp$(PHP_MAJOR_VERSION).la: $(PHP_GLOBAL_OBJS) $(PHP_SAPI_OBJS)
 	$(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(EXTRA_CFLAGS) -rpath $(phptempdir) $(EXTRA_LDFLAGS) $(LDFLAGS) $(PHP_RPATHS) $(PHP_GLOBAL_OBJS) $(PHP_SAPI_OBJS) $(EXTRA_LIBS) $(ZEND_EXTRA_LIBS) -o $@
@@ -78,6 +80,8 @@ install-sapi: $(OVERALL_TARGET)
 		done; \
 	fi
 	@$(INSTALL_IT)
+
+install-binaries: build-binaries $(install_binary_targets)
 
 install-modules: build-modules
 	@test -d modules && \
@@ -123,10 +127,10 @@ PHP_TEST_SHARED_EXTENSIONS =  ` \
 			. $$i; $(top_srcdir)/build/shtool echo -n -- " -d $(ZEND_EXT_TYPE)=$(top_builddir)/modules/$$dlname"; \
 		done; \
 	fi`
-PHP_DEPRECATED_DIRECTIVES_REGEX = '^(define_syslog_variables|register_(globals|long_arrays)?|safe_mode|magic_quotes_(gpc|runtime|sybase)?|(zend_)?extension(_debug)?(_ts)?)[\t\ ]*='
+PHP_DEPRECATED_DIRECTIVES_REGEX = '^(magic_quotes_(gpc|runtime|sybase)?|(zend_)?extension(_debug)?(_ts)?)[\t\ ]*='
 
 test: all
-	-@if test ! -z "$(PHP_EXECUTABLE)" && test -x "$(PHP_EXECUTABLE)"; then \
+	@if test ! -z "$(PHP_EXECUTABLE)" && test -x "$(PHP_EXECUTABLE)"; then \
 		INI_FILE=`$(PHP_EXECUTABLE) -d 'display_errors=stderr' -r 'echo php_ini_loaded_file();' 2> /dev/null`; \
 		if test "$$INI_FILE"; then \
 			$(EGREP) -h -v $(PHP_DEPRECATED_DIRECTIVES_REGEX) "$$INI_FILE" > $(top_builddir)/tmp-php.ini; \
@@ -142,7 +146,9 @@ test: all
 		TEST_PHP_SRCDIR=$(top_srcdir) \
 		CC="$(CC)" \
 			$(PHP_EXECUTABLE) -n -c $(top_builddir)/tmp-php.ini $(PHP_TEST_SETTINGS) $(top_srcdir)/run-tests.php -n -c $(top_builddir)/tmp-php.ini -d extension_dir=$(top_builddir)/modules/ $(PHP_TEST_SHARED_EXTENSIONS) $(TESTS); \
+		TEST_RESULT_EXIT_CODE=$$?; \
 		rm $(top_builddir)/tmp-php.ini; \
+		exit $$TEST_RESULT_EXIT_CODE; \
 	else \
 		echo "ERROR: Cannot run tests without CLI sapi."; \
 	fi
@@ -153,36 +159,45 @@ clean:
 	find . -name \*.la -o -name \*.a | xargs rm -f 
 	find . -name \*.so | xargs rm -f
 	find . -name .libs -a -type d|xargs rm -rf
-	rm -f libphp$(PHP_MAJOR_VERSION).la $(SAPI_CLI_PATH) $(OVERALL_TARGET) modules/* libs/*
+	rm -f libphp$(PHP_MAJOR_VERSION).la $(SAPI_CLI_PATH) $(SAPI_CGI_PATH) $(SAPI_MILTER_PATH) $(SAPI_LITESPEED_PATH) $(SAPI_FPM_PATH) $(OVERALL_TARGET) modules/* libs/*
 
 distclean: clean
-	rm -f Makefile config.cache config.log config.status Makefile.objects Makefile.fragments libtool main/php_config.h stamp-h sapi/apache/libphp$(PHP_MAJOR_VERSION).module buildmk.stamp
+	rm -f Makefile config.cache config.log config.status Makefile.objects Makefile.fragments libtool main/php_config.h main/internal_functions_cli.c main/internal_functions.c stamp-h sapi/apache/libphp$(PHP_MAJOR_VERSION).module sapi/apache_hooks/libphp$(PHP_MAJOR_VERSION).module buildmk.stamp Zend/zend_dtrace_gen.h Zend/zend_dtrace_gen.h.bak Zend/zend_config.h TSRM/tsrm_config.h
+	rm -f php5.spec main/build-defs.h scripts/phpize
+	rm -f ext/date/lib/timelib_config.h ext/mbstring/oniguruma/config.h ext/mbstring/libmbfl/config.h ext/mysqlnd/php_mysqlnd_config.h
+	rm -f scripts/man1/phpize.1 scripts/php-config scripts/man1/php-config.1 sapi/cli/php.1 sapi/cgi/php-cgi.1 ext/phar/phar.1 ext/phar/phar.phar.1
+	rm -f sapi/fpm/php-fpm.conf sapi/fpm/init.d.php-fpm sapi/fpm/php-fpm.service sapi/fpm/php-fpm.8 sapi/fpm/status.html
+	rm -f ext/iconv/php_have_bsd_iconv.h ext/iconv/php_have_glibc_iconv.h ext/iconv/php_have_ibm_iconv.h ext/iconv/php_have_iconv.h ext/iconv/php_have_libiconv.h ext/iconv/php_iconv_aliased_libiconv.h ext/iconv/php_iconv_supports_errno.h ext/iconv/php_php_iconv_h_path.h ext/iconv/php_php_iconv_impl.h
+	rm -f ext/phar/phar.phar ext/phar/phar.php
+	if test "$(srcdir)" != "$(builddir)"; then \
+	  rm -f ext/phar/phar/phar.inc; \
+	fi
 	$(EGREP) define'.*include/php' $(top_srcdir)/configure | $(SED) 's/.*>//'|xargs rm -f
 
 .PHONY: all clean install distclean test
 .NOEXPORT:
 lib4d_sql/base64.lo: /home/edv-administrator/pdo4d/lib4d_sql/base64.c
-	$(LIBTOOL) --mode=compile $(CC) -I/usr/include/php/ext -I/home/edv-administrator/pdo4d/lib4d_sql -I. -I/home/edv-administrator/pdo4d $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)  -c /home/edv-administrator/pdo4d/lib4d_sql/base64.c -o lib4d_sql/base64.lo 
+	$(LIBTOOL) --mode=compile $(CC) -I -I/home/edv-administrator/pdo4d/lib4d_sql -I. -I/home/edv-administrator/pdo4d $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)  -c /home/edv-administrator/pdo4d/lib4d_sql/base64.c -o lib4d_sql/base64.lo 
 lib4d_sql/communication.lo: /home/edv-administrator/pdo4d/lib4d_sql/communication.c
-	$(LIBTOOL) --mode=compile $(CC) -I/usr/include/php/ext -I/home/edv-administrator/pdo4d/lib4d_sql -I. -I/home/edv-administrator/pdo4d $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)  -c /home/edv-administrator/pdo4d/lib4d_sql/communication.c -o lib4d_sql/communication.lo 
+	$(LIBTOOL) --mode=compile $(CC) -I -I/home/edv-administrator/pdo4d/lib4d_sql -I. -I/home/edv-administrator/pdo4d $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)  -c /home/edv-administrator/pdo4d/lib4d_sql/communication.c -o lib4d_sql/communication.lo 
 lib4d_sql/fourd.lo: /home/edv-administrator/pdo4d/lib4d_sql/fourd.c
-	$(LIBTOOL) --mode=compile $(CC) -I/usr/include/php/ext -I/home/edv-administrator/pdo4d/lib4d_sql -I. -I/home/edv-administrator/pdo4d $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)  -c /home/edv-administrator/pdo4d/lib4d_sql/fourd.c -o lib4d_sql/fourd.lo 
+	$(LIBTOOL) --mode=compile $(CC) -I -I/home/edv-administrator/pdo4d/lib4d_sql -I. -I/home/edv-administrator/pdo4d $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)  -c /home/edv-administrator/pdo4d/lib4d_sql/fourd.c -o lib4d_sql/fourd.lo 
 lib4d_sql/fourd_interne.lo: /home/edv-administrator/pdo4d/lib4d_sql/fourd_interne.c
-	$(LIBTOOL) --mode=compile $(CC) -I/usr/include/php/ext -I/home/edv-administrator/pdo4d/lib4d_sql -I. -I/home/edv-administrator/pdo4d $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)  -c /home/edv-administrator/pdo4d/lib4d_sql/fourd_interne.c -o lib4d_sql/fourd_interne.lo 
+	$(LIBTOOL) --mode=compile $(CC) -I -I/home/edv-administrator/pdo4d/lib4d_sql -I. -I/home/edv-administrator/pdo4d $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)  -c /home/edv-administrator/pdo4d/lib4d_sql/fourd_interne.c -o lib4d_sql/fourd_interne.lo 
 lib4d_sql/fourd_result.lo: /home/edv-administrator/pdo4d/lib4d_sql/fourd_result.c
-	$(LIBTOOL) --mode=compile $(CC) -I/usr/include/php/ext -I/home/edv-administrator/pdo4d/lib4d_sql -I. -I/home/edv-administrator/pdo4d $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)  -c /home/edv-administrator/pdo4d/lib4d_sql/fourd_result.c -o lib4d_sql/fourd_result.lo 
+	$(LIBTOOL) --mode=compile $(CC) -I -I/home/edv-administrator/pdo4d/lib4d_sql -I. -I/home/edv-administrator/pdo4d $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)  -c /home/edv-administrator/pdo4d/lib4d_sql/fourd_result.c -o lib4d_sql/fourd_result.lo 
 lib4d_sql/fourd_type.lo: /home/edv-administrator/pdo4d/lib4d_sql/fourd_type.c
-	$(LIBTOOL) --mode=compile $(CC) -I/usr/include/php/ext -I/home/edv-administrator/pdo4d/lib4d_sql -I. -I/home/edv-administrator/pdo4d $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)  -c /home/edv-administrator/pdo4d/lib4d_sql/fourd_type.c -o lib4d_sql/fourd_type.lo 
+	$(LIBTOOL) --mode=compile $(CC) -I -I/home/edv-administrator/pdo4d/lib4d_sql -I. -I/home/edv-administrator/pdo4d $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)  -c /home/edv-administrator/pdo4d/lib4d_sql/fourd_type.c -o lib4d_sql/fourd_type.lo 
 lib4d_sql/sqlstate.lo: /home/edv-administrator/pdo4d/lib4d_sql/sqlstate.c
-	$(LIBTOOL) --mode=compile $(CC) -I/usr/include/php/ext -I/home/edv-administrator/pdo4d/lib4d_sql -I. -I/home/edv-administrator/pdo4d $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)  -c /home/edv-administrator/pdo4d/lib4d_sql/sqlstate.c -o lib4d_sql/sqlstate.lo 
+	$(LIBTOOL) --mode=compile $(CC) -I -I/home/edv-administrator/pdo4d/lib4d_sql -I. -I/home/edv-administrator/pdo4d $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)  -c /home/edv-administrator/pdo4d/lib4d_sql/sqlstate.c -o lib4d_sql/sqlstate.lo 
 lib4d_sql/utils.lo: /home/edv-administrator/pdo4d/lib4d_sql/utils.c
-	$(LIBTOOL) --mode=compile $(CC) -I/usr/include/php/ext -I/home/edv-administrator/pdo4d/lib4d_sql -I. -I/home/edv-administrator/pdo4d $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)  -c /home/edv-administrator/pdo4d/lib4d_sql/utils.c -o lib4d_sql/utils.lo 
+	$(LIBTOOL) --mode=compile $(CC) -I -I/home/edv-administrator/pdo4d/lib4d_sql -I. -I/home/edv-administrator/pdo4d $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)  -c /home/edv-administrator/pdo4d/lib4d_sql/utils.c -o lib4d_sql/utils.lo 
 pdo_4d.lo: /home/edv-administrator/pdo4d/pdo_4d.c
-	$(LIBTOOL) --mode=compile $(CC) -I/usr/include/php/ext -I/home/edv-administrator/pdo4d/lib4d_sql -I. -I/home/edv-administrator/pdo4d $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)  -c /home/edv-administrator/pdo4d/pdo_4d.c -o pdo_4d.lo 
+	$(LIBTOOL) --mode=compile $(CC) -I -I/home/edv-administrator/pdo4d/lib4d_sql -I. -I/home/edv-administrator/pdo4d $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)  -c /home/edv-administrator/pdo4d/pdo_4d.c -o pdo_4d.lo 
 4d_driver.lo: /home/edv-administrator/pdo4d/4d_driver.c
-	$(LIBTOOL) --mode=compile $(CC) -I/usr/include/php/ext -I/home/edv-administrator/pdo4d/lib4d_sql -I. -I/home/edv-administrator/pdo4d $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)  -c /home/edv-administrator/pdo4d/4d_driver.c -o 4d_driver.lo 
+	$(LIBTOOL) --mode=compile $(CC) -I -I/home/edv-administrator/pdo4d/lib4d_sql -I. -I/home/edv-administrator/pdo4d $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)  -c /home/edv-administrator/pdo4d/4d_driver.c -o 4d_driver.lo 
 4d_statement.lo: /home/edv-administrator/pdo4d/4d_statement.c
-	$(LIBTOOL) --mode=compile $(CC) -I/usr/include/php/ext -I/home/edv-administrator/pdo4d/lib4d_sql -I. -I/home/edv-administrator/pdo4d $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)  -c /home/edv-administrator/pdo4d/4d_statement.c -o 4d_statement.lo 
+	$(LIBTOOL) --mode=compile $(CC) -I -I/home/edv-administrator/pdo4d/lib4d_sql -I. -I/home/edv-administrator/pdo4d $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)  -c /home/edv-administrator/pdo4d/4d_statement.c -o 4d_statement.lo 
 $(phplibdir)/pdo_4d.la: ./pdo_4d.la
 	$(LIBTOOL) --mode=install cp ./pdo_4d.la $(phplibdir)
 
