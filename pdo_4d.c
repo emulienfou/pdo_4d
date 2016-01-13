@@ -156,17 +156,16 @@ PHP_MINFO_FUNCTION(pdo_4d)
     
     php_info_print_table_start();
     php_info_print_table_header(2, "PDO Driver for 4D" , "enabled");
-    php_info_print_table_row(2, "Version", "0.3");
+    php_info_print_table_row(2, "Version", "0.4");
     php_info_print_table_row(2, "Status", "Beta");
-    php_info_print_table_row(2, "Build Date", "$Date: 2009-11-04 09:54:21 +0200 (Mon, 01 Nov 2009) $");
+    php_info_print_table_row(2, "Build Date", "$Date: 2016-01-16 15:43:21 +0100$");
     php_info_print_table_row(2, "Core library", "lib4d_sql 0.3 (http://freshmeat.net/projects/lib4d_sql)");
     php_info_print_table_row(2, "Provided by ", 
         "4D (http://www.4d.com), and " 
         "Alter Way (http://www.alterway.fr)"
     );
     php_info_print_table_row(2, "Maintainers", 
-        "Alexandre Morgaut (lead), " 
-        "Stephane Planquart (developer)"
+        "Thomas Pulzer"
     );
     php_info_print_table_end();
 
