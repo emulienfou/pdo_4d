@@ -1,0 +1,5 @@
+PECL :: PDO_4D
+ 
+This library is an interface with the 4D SQL server.
+It is intented to work with 4D version 11 and up.
+It is highly recommanded to use version 11.4 and more recent.

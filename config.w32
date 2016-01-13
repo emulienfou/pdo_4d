@@ -1,0 +1,30 @@
+// $ Id: $
+// vim:ft=javascript
+
+ARG_WITH('pdo-4d' , '4D-SQL support for PDO', 'no');
+if (PHP_PDO_4D != "no") {
+	if (PHP_PDO_4D != "yes") {
+		if (CHECK_LIB("lib4d_sql.lib", "pdo_4d",  PHP_PDO_4D)
+		&& CHECK_HEADER_ADD_INCLUDE("fourd.h", "CFLAGS_PDO_4D", PHP_PDO_4D)) 
+		{
+				EXTENSION("pdo_4d", "pdo_4d.c 4d_driver.c 4d_statement.c");
+				AC_DEFINE('HAVE_PDO_4D', 1, 'PDO driver for 4D-SQL');
+		} 
+		else {
+			WARNING("pdo_4d not enabled; libraries and headers not found");
+		}
+	  ADD_EXTENSION_DEP('pdo_4d', 'pdo');
+	  ADD_EXTENSION_DEP('pdo_4d', 'mbstring');
+	}
+	else{
+		if(CHECK_HEADER_ADD_INCLUDE("fourd.h", "CFLAGS_PDO_4D", configure_module_dirname + "/lib4d_sql")){
+			EXTENSION("pdo_4d", "pdo_4d.c 4d_driver.c 4d_statement.c");
+			ADD_SOURCES(configure_module_dirname + "/lib4d_sql","base64.c communication.c fourd.c fourd_interne.c fourd_result.c fourd_type.c sqlstate.c utils.c", "pdo_4d");
+			AC_DEFINE('HAVE_PDO_4D', 1, 'PDO driver for 4D-SQL');
+		  ADD_EXTENSION_DEP('pdo_4d', 'pdo');
+		  ADD_EXTENSION_DEP('pdo_4d', 'mbstring');
+		} else {
+			WARNING("fourd.h not found");
+		}
+	}
+}

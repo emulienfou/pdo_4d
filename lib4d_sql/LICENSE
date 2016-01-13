@@ -1,0 +1,11 @@
+This distribution of lib4d_sql apply to the PHP License 3.01
+
+This distribution for the PDO_4D PHP extension has is a version of the original lib4d_sql 
+available under several licences through the world-wide-web at the following url:  
+http://freshmeat.net/projects/lib4d_sql
+
+We highly recommanded to send all contribution for libsql_4d to the original distribution
+to make it possible to be used with the other licences and to prevent the PHP branch becoming
+incompatible with the contributions made for original one.
+
+4D is a registered trademark of 4D SAS
