@@ -102,8 +102,12 @@ static int pdo_4d_stmt_describe(pdo_stmt_t *stmt, int colno TSRMLS_DC)
 		namelen = strlen(name);
 		cols[i].precision = 0;
 		cols[i].maxlen = 0;/*namelen;*/
+#if PHP_VERSION_ID >= 70000
+		cols[i].name = zend_string_init(name, namelen, 0);
+#else
 		cols[i].namelen = namelen;
 		cols[i].name = estrndup(name, namelen);
+#endif
 		cols[i].param_type = PDO_PARAM_STR;
 		//if(i==1) cols[i].param_type = PDO_PARAM_LOB;
 	}
@@ -191,7 +195,11 @@ static int pdo_4d_stmt_get_attribute(pdo_stmt_t *stmt, long attr, zval *return_v
 	pdo_4d_stmt *S = (pdo_4d_stmt*)stmt->driver_data;
 	switch (attr) {
 		case PDO_FOURD_ATTR_CHARSET:
+#if PHP_VERSION_ID >= 70000
+			ZVAL_STRING(return_value, S->charset);
+#else
 			ZVAL_STRING(return_value, S->charset, 1);
+#endif
 			break;
 		default:
 			return 0;	
@@ -203,7 +211,11 @@ static int pdo_4d_stmt_col_meta(pdo_stmt_t *stmt, long colno, zval *return_value
 {
 	pdo_4d_stmt *S = (pdo_4d_stmt*)stmt->driver_data;
 	//MYSQL_FIELD *F;
+#if PHP_VERSION_ID >= 70000
+	zval flags;
+#else
 	zval *flags;
+#endif
 	char *str;
 	FOURD_TYPE type;
 	
@@ -216,22 +228,41 @@ static int pdo_4d_stmt_col_meta(pdo_stmt_t *stmt, long colno, zval *return_value
 	}
 
 	array_init(return_value);
+#if PHP_VERSION_ID < 70000
 	MAKE_STD_ZVAL(flags);
 	array_init(flags);
+#else
+	array_init(&flags);
+#endif
+	
 
 	switch(type=fourd_get_column_type(S->result,colno))
 	{
 		case VK_BLOB:
 		case VK_IMAGE:
+#if PHP_VERSION_ID >= 70000
+			add_next_index_string(&flags, "blob");
+#else
 			add_next_index_string(flags, "blob", 1);
+#endif
+			
 			break;
 	}
 	str=pestrdup(stringFromType(type),1);
 	if (str) {
+#if PHP_VERSION_ID >= 70000
+		add_assoc_string(return_value, "native_type", str);
+#else
 		add_assoc_string(return_value, "native_type", str, 1);
+#endif
 	}
 
+#if PHP_VERSION_ID >= 70000
+	add_assoc_zval(return_value, "flags", &flags);
+#else
 	add_assoc_zval(return_value, "flags", flags);
+#endif
+	
 	return SUCCESS;
 }
 static int pdo_4d_stmt_cursor_closer(pdo_stmt_t *stmt TSRMLS_DC)
@@ -290,7 +321,11 @@ static int pdo_4d_stmt_param_hook(pdo_stmt_t *stmt, struct pdo_bound_param_data 
 			/*printf("bind param:%d\n",param->paramno);*/
 			if (param->paramno < 0 ) {
 				strcpy(stmt->error_code, "HY093");
+#if PHP_VERSION_ID >= 70000
+				pdo_raise_impl_error(stmt->dbh, stmt, "HY093", param->name->val TSRMLS_CC);
+#else
 				pdo_raise_impl_error(stmt->dbh, stmt, "HY093", param->name TSRMLS_CC);
+#endif
 				return 0;
 			}
 			return 1;
@@ -299,7 +334,11 @@ static int pdo_4d_stmt_param_hook(pdo_stmt_t *stmt, struct pdo_bound_param_data 
 		/* printf("bind_param: %d,%d\n",PDO_PARAM_TYPE(param->param_type),Z_TYPE_P(param->parameter)); */
 			if (param->paramno < 0 ) {
 				strcpy(stmt->error_code, "HY093");
+#if PHP_VERSION_ID >= 70000
+				pdo_raise_impl_error(stmt->dbh, stmt, "HY093", param->name->val TSRMLS_CC);
+#else
 				pdo_raise_impl_error(stmt->dbh, stmt, "HY093", param->name TSRMLS_CC);
+#endif
 				return 0;
 			}
 			if (param->is_param) {
@@ -312,20 +351,34 @@ static int pdo_4d_stmt_param_hook(pdo_stmt_t *stmt, struct pdo_bound_param_data 
 						return 1;
 					case PDO_PARAM_INT:
 						{
+#if PHP_VERSION_ID >= 70000
+							FOURD_LONG val=Z_LVAL(param->parameter);
+#else
 							FOURD_LONG val=Z_LVAL_P(param->parameter);
+#endif
 							fourd_bind_param(S->state,param->paramno,VK_LONG, &val);
 						}
 						return 1;
 
 					case PDO_PARAM_LOB:
+#if PHP_VERSION_ID >= 70000
+						if (Z_TYPE(param->parameter) == IS_RESOURCE) {
+#else
 						if (Z_TYPE_P(param->parameter) == IS_RESOURCE) {
+#endif
 							php_stream *stm;
 							php_stream_from_zval_no_verify(stm, &param->parameter);
 							if (stm) {
 								SEPARATE_ZVAL(&param->parameter);
+#if PHP_VERSION_ID >= 70000
+								param->parameter.u1.v.type = IS_STRING;
+								Z_STRLEN(param->parameter) = php_stream_copy_to_mem(stm,
+									PHP_STREAM_COPY_ALL, 0)->len;
+#else
 								Z_TYPE_P(param->parameter) = IS_STRING;
 								Z_STRLEN_P(param->parameter) = php_stream_copy_to_mem(stm,
 									&Z_STRVAL_P(param->parameter), PHP_STREAM_COPY_ALL, 0);
+#endif
 							} else {
 								pdo_raise_impl_error(stmt->dbh, stmt, "HY105", "Expected a stream resource" TSRMLS_CC);
 								return 0;
@@ -333,8 +386,13 @@ static int pdo_4d_stmt_param_hook(pdo_stmt_t *stmt, struct pdo_bound_param_data 
 							{
 								FOURD_BLOB str;
 								int len=0;
+#if PHP_VERSION_ID >= 70000
+								str.length=Z_STRLEN(param->parameter);	
+								str.data=Z_STRVAL(param->parameter);
+#else
 								str.length=Z_STRLEN_P(param->parameter);	
 								str.data=Z_STRVAL_P(param->parameter);
+#endif
 								fourd_bind_param(S->state,param->paramno,VK_BLOB, &str);
 							}
 							return 1;
@@ -342,25 +400,41 @@ static int pdo_4d_stmt_param_hook(pdo_stmt_t *stmt, struct pdo_bound_param_data 
 						/* fall through */
 					case PDO_PARAM_STR:
 					default:
+#if PHP_VERSION_ID >= 70000
+						switch (Z_TYPE(param->parameter)) {
+#else
 						switch (Z_TYPE_P(param->parameter)) {
+#endif
 							case IS_NULL:
 								fourd_bind_param(S->state,param->paramno,VK_STRING, NULL);
 								return 1;
 							case IS_LONG:
 								{
+#if PHP_VERSION_ID >= 70000
+									FOURD_LONG val=Z_LVAL(param->parameter);
+#else
 									FOURD_LONG val=Z_LVAL_P(param->parameter);
+#endif
 									fourd_bind_param(S->state,param->paramno,VK_LONG, &val);
 								}
 								return 1;
 							case IS_DOUBLE:
+#if PHP_VERSION_ID >= 70000
+								fourd_bind_param(S->state,param->paramno,VK_REAL, &Z_DVAL(param->parameter));
+#else
 								fourd_bind_param(S->state,param->paramno,VK_REAL, &Z_DVAL_P(param->parameter));
+#endif
 								return 1;
 							case IS_STRING:
 								{									
 									FOURD_STRING str;
 									int len=0;
 									/*  MBSTRING_API char * php_mb_convert_encoding(char *input, size_t length, char *_to_encoding, char *_from_encodings, size_t *output_len TSRMLS_DC) */
+#if PHP_VERSION_ID >= 70000
+									char* val=php_mb_convert_encoding(Z_STRVAL(param->parameter), Z_STRLEN(param->parameter),FOURD_CHARSET_SERVEUR,S->charset,&len TSRMLS_CC);
+#else
 									char* val=php_mb_convert_encoding(Z_STRVAL_P(param->parameter), Z_STRLEN_P(param->parameter),FOURD_CHARSET_SERVEUR,S->charset,&len TSRMLS_CC);
+#endif
 									str.length=len/2;	
 									str.data=val;
 									fourd_bind_param(S->state,param->paramno,VK_STRING, &str);
@@ -371,8 +445,13 @@ static int pdo_4d_stmt_param_hook(pdo_stmt_t *stmt, struct pdo_bound_param_data 
 									FOURD_STRING str;
 									int len=0;
 									char* val=NULL;
+#if PHP_VERSION_ID >= 70000
+									convert_to_string(&param->parameter);
+									val=php_mb_convert_encoding(Z_STRVAL(param->parameter), Z_STRLEN(param->parameter),FOURD_CHARSET_SERVEUR,S->charset,&len TSRMLS_CC);
+#else
 									convert_to_string(param->parameter);
 									val=php_mb_convert_encoding(Z_STRVAL_P(param->parameter), Z_STRLEN_P(param->parameter),FOURD_CHARSET_SERVEUR,S->charset,&len TSRMLS_CC);
+#endif
 									str.length=len/2;
 									str.data=val;
 									fourd_bind_param(S->state,param->paramno,VK_STRING, &str);

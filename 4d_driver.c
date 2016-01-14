@@ -104,7 +104,11 @@ static int pdo_4d_fetch_error_func(pdo_dbh_t *dbh, pdo_stmt_t *stmt, zval *info 
 
 	if (einfo->errcode) {
 		add_next_index_long(info, einfo->errcode);
+#if PHP_VERSION_ID >= 70000
+		add_next_index_string(info, einfo->errmsg);
+#else
 		add_next_index_string(info, einfo->errmsg, 1);
+#endif
 	}
 
 	return 1;
@@ -150,7 +154,7 @@ static int fourd_handle_preparer(pdo_dbh_t *dbh, const char *sql, long sql_len, 
 	pdo_4d_db_handle *H = (pdo_4d_db_handle *)dbh->driver_data;
 	pdo_4d_stmt *S = ecalloc(1, sizeof(pdo_4d_stmt));	
 	char *nsql = NULL;
-	int nsql_len = 0;
+	long unsigned int nsql_len = 0;
 	int ret;
 	S->H = H;
 	stmt->driver_data = S;
@@ -228,10 +232,18 @@ static int pdo_4d_get_attribute(pdo_dbh_t *dbh, long attr, zval *return_value TS
 
 	switch (attr) {
 		case PDO_FOURD_ATTR_CHARSET:
+#if PHP_VERSION_ID >= 70000
+			ZVAL_STRING(return_value, H->charset);
+#else
 			ZVAL_STRING(return_value, H->charset, 1);
+#endif
 			break;
 		case PDO_FOURD_ATTR_PREFERRED_IMAGE_TYPES:
-			ZVAL_STRING(return_value, fourd_get_preferred_image_types(H->server), 1);			
+#if PHP_VERSION_ID >= 70000
+			ZVAL_STRING(return_value, H->charset);
+#else
+			ZVAL_STRING(return_value, H->charset, 1);
+#endif
 			break;
 		default:
 			return 0;	
