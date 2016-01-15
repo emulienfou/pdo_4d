@@ -82,6 +82,7 @@ void Free(void *p);
 void FreeFloat(FOURD_FLOAT *p);
 void FreeString(FOURD_STRING *p);
 void FreeBlob(FOURD_BLOB *p);
+void FreeImage(FOURD_IMAGE *p);
 void PrintData(const void *data,unsigned int size);
 #ifndef WIN32
 	void ZeroMemory (void *s, size_t n);

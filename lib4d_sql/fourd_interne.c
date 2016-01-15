@@ -654,7 +654,7 @@ void _free_data_result(FOURD_RESULT *res)
 				FreeBlob((FOURD_BLOB *)pElmt->pValue);
 				break;
 			case VK_IMAGE:
-				Printferr("Image-Type not supported\n");
+				FreeImage((FOURD_IMAGE *)pElmt->pValue);
 				break;
 		}
 	}
@@ -714,7 +714,15 @@ void *_copy(FOURD_TYPE type,void *org)
 				}
 				break;
 			case VK_IMAGE:
-				Printferr("Image-Type not supported\n");
+				{
+					FOURD_IMAGE *src=org;
+					FOURD_IMAGE *cp=NULL;
+					cp=calloc(1,sizeof(FOURD_IMAGE));
+					cp->data=calloc(src->length,1);	
+					cp->length=src->length;
+					memcpy(cp->data,src->data,src->length);
+					buff=cp;
+				}
 				break;
 		}
 	}
@@ -785,7 +793,14 @@ char *_serialize(char *data,int *size, FOURD_TYPE type, void *pObj)
 				}
 				break;
 			case VK_IMAGE:
-				Printferr("Image-Type not supported\n");
+				{
+					FOURD_IMAGE *o=pObj;
+					lSize=sizeof(o->length)+o->length*2;
+					data=realloc(data,(*size)+lSize);
+					memcpy(data+*size,&(o->length),4);
+					memcpy(data+*size+4,o->data,o->length*2);
+					*size+=lSize;
+				}
 				break;
 		}
 	}
@@ -812,6 +827,13 @@ void FreeString(FOURD_STRING *p)
 	}
 }
 void FreeBlob(FOURD_BLOB *p)
+{
+	if(p) {
+		Free(p->data);
+		Free(p);
+	}
+}
+void FreeImage(FOURD_IMAGE *p)
 {
 	if(p) {
 		Free(p->data);

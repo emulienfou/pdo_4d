@@ -384,19 +384,30 @@ int socket_receiv_data(FOURD *cnx,FOURD_RESULT *state)
 							str->data[data_length*2+1]=0;
 							len+=iResult;
 						}
-						/*
-						{
-							int length=0;
-							char *chaine=NULL;
-							chaine=base64_encode((unsigned char*)str->data,data_length*2,&length);
-							Printf("Chaine: %s\n",chaine);
-							free(chaine);
-						}*/
 					}
 					break;
 				case VK_IMAGE:
-					//Printferr("Image-Type not supported\n");
-					//break;
+					{
+						int data_length=0;
+						FOURD_IMAGE *img;
+						//read negative value of length of string
+						img=calloc(1,sizeof(FOURD_IMAGE));
+						pElmt->pValue=img;
+						iResult = frecv(cnx->socket,(char*)&data_length,4, 0);
+						Printf("Image length: %08X\n",data_length);
+						len+=iResult;
+						if(data_length==0){
+							img->length=0;
+							img->data=NULL;
+							pElmt->null=1;
+						}else{
+							img->length=data_length;
+							img->data=calloc(data_length,1);
+							iResult = frecv(cnx->socket,img->data,data_length, 0);
+							len+=iResult;
+						}
+					}
+					break;
 				case VK_BLOB:
 					{
 						int data_length=0;
@@ -417,9 +428,7 @@ int socket_receiv_data(FOURD *cnx,FOURD_RESULT *state)
 							iResult = frecv(cnx->socket,blob->data,data_length, 0);
 							len+=iResult;
 						}
-						//Printf("Blob: %d Bytes\n",data_length);
 					}
-					//Printferr("Blob not supported\n");
 					break;
 				default:
 					Printferr("Type not supported (%s) at row %d column %d\n",stringFromType(colType[c]),(elmts_offset-c+1)/nbCol+1,c+1);

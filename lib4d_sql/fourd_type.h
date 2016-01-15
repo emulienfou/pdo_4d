@@ -82,6 +82,6 @@ typedef	struct{short year;char mounth;char day;unsigned int milli;}FOURD_TIMESTA
 typedef	__int64 FOURD_DURATION;//in milliseconds
 typedef	struct{int length;unsigned char *data;}FOURD_STRING;
 typedef	struct{unsigned int length;void *data;}FOURD_BLOB;
-//typedef	struct{}FOURD_IMAGE; 
+typedef	struct{unsigned int length;void *data;}FOURD_IMAGE;
 
 #endif

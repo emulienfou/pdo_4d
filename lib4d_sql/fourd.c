@@ -309,7 +309,7 @@ int fourd_field_to_string(FOURD_RESULT *res,unsigned int numCol,char **value,int
 				milli-=s*(1000);
 
 				*value=calloc(24,sizeof(char));	
-				sprintf_s(*value,24,"%0.4d/%0.2d/%0.2d %0.2d:%0.2d:%0.2d.%0.3d",t->year,t->mounth,t->day,h,m,s,milli);
+				sprintf_s(*value,24,"%0.4d-%0.2d-%0.2d %0.2d:%0.2d:%0.2d.%0.3d",t->year,t->mounth,t->day,h,m,s,milli);
 				*len=strlen(*value);
 				return 1;
 			}
