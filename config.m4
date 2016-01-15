@@ -8,9 +8,7 @@ PHP_ARG_WITH(pdo-4d, for 4D-SQL support for PDO,
 if test "$PHP_PDO_4D" != "no"; then
   dnl #export OLD_CPPFLAGS="$CPPFLAGS"
   dnl #export CPPFLAGS="$CPPFLAGS $INCLUDES -DHAVE_PDO_4D"
-	
-
-	
+  
 	ifdef(
 	  [PHP_CHECK_PDO_INCLUDES],
 	  [PHP_CHECK_PDO_INCLUDES],
@@ -28,7 +26,7 @@ if test "$PHP_PDO_4D" != "no"; then
 	    AC_MSG_RESULT($pdo_inc_path)
 	  ]
 	)
-  	PHP_ADD_INCLUDE($pdo_inc_path)
+	PHP_ADD_INCLUDE($pdo_inc_path)
 	PHP_ADD_INCLUDE("$pdo_inc_path/pdo")
 	
 	if test "$PHP_PDO_4D" != "yes"; then
@@ -56,7 +54,4 @@ if test "$PHP_PDO_4D" != "no"; then
   ])
 
 dnl  #export CPPFLAGS="$OLD_CPPFLAGS"
-
-
 fi
-
