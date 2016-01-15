@@ -10,6 +10,7 @@ build
 Makefile.in
 Makefile.global
 Makefile.fragments
+Makefile.objects
 
 # http://www.gnu.org/software/autoconf
 
@@ -20,6 +21,10 @@ Makefile.fragments
 /acinclude.m4
 /compile
 /config.h.in
+/config.h
+/config.log
+/config.nice
+/config.status
 /config.guess
 /config.sub
 /configure
@@ -33,6 +38,9 @@ Makefile.fragments
 /ltmain.sh
 /mkinstalldirs
 /run-tests.php
+/libtool
+
+Makefile
 
 # Object files
 *.o
