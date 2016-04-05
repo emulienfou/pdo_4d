@@ -4,6 +4,7 @@
 .kdev4
 build
 *.kdev4
+tests
 
 # http://www.gnu.org/software/automake
 
