@@ -45,10 +45,6 @@
 #include "php_logos.h"
 #endif
 
-
-static unsigned char pdo_4d_logo[] = {
-#include "pdo_4d_logos.h"
-}; 
 /* }}} */
 /* {{{ pdo_4d_functions[] */
 #if PHP_VERSION_ID < 50400
@@ -93,9 +89,6 @@ PHP_INI_END()
 /* {{{ PHP_MINIT_FUNCTION */
 PHP_MINIT_FUNCTION(pdo_4d)
 {
-#if PHP_VERSION_ID < 50500
-	php_register_info_logo("PDO_4D_LOGO_ID", "", pdo_4d_logo, 778);
-#endif
 	REGISTER_INI_ENTRIES();
 	/* add your stuff here */
 	
@@ -116,10 +109,6 @@ PHP_MINIT_FUNCTION(pdo_4d)
 /* {{{ PHP_MSHUTDOWN_FUNCTION */
 PHP_MSHUTDOWN_FUNCTION(pdo_4d)
 {
-#if PHP_VERSION_ID < 50500
-	php_unregister_info_logo("PDO_4D_LOGO_ID");
-#endif
-	
 	php_pdo_unregister_driver(&pdo_4d_driver);
     UNREGISTER_INI_ENTRIES();
 
@@ -185,7 +174,7 @@ PHP_MINFO_FUNCTION(pdo_4d)
 	  php_printf("This program makes use of the 4D SQL protocol: <br />");
 	  php_printf("4D v11 and up, Copyright (c) 2009 4D");
   	php_printf( 
-        "<img src=\"%s?=PDO_4D_LOGO_ID\""
+        "<img src=\"data:image/gif;base64,R0lGODlhQABAAOYAAHl5kiU8dcTH16mns+zq6vv7+7WzvEtUg3h7o9PX49va3OXk5DxLgJ2cqnR0jpSTpdPR1GJkhYeHpzNFfKSjr3mIq7y6wkdSg1RZgmxsiSxAeMXDylpegpycuk5Ue11gh1VolWV3n0VNdoSEmvLx8Pb29lVZfezs8ouKnqStxYuNsGlskjhIfoyYt8vJzmBkjdTT2YKBljJCdKu0y0FOgsLBx6GfrL2+0eLg4a+uuGlph8C+xc/O0+Tl7bK6z1RbiLOxvrzD1cjGzPLz9+7t7d7i6pWgvH9+lZqZqZWUro+Oo7y7ytnX2uTi4k9WgzhFdEldjefm5vPy8mZojIiHm5eWpVleiUVai97d4bGxyD5JdmZnhrm3vpiXqeHg5OTj5eno6PT2+NfV1o+Nnt7d3fDv7zlGeK6tw3Bwjvj4+M7M0E5WhpKQoV9hgvj398rQ3kxgjzBHfvj5+ebp7+7w9FxumeHg4D9Uh1Bjkpulv/Tz8/r4+P///0NQhB84c////yH5BAEAAH8ALAAAAABAAEAAAAf/gH+Cg39+hoeIiYqLjI2JhJCCjpOUlY6RhZaam5SQnJ+gioOhpKSSpaibp6msk5mtsLGylX19s7G1uba3qLq+vKS+wsCcwsa7rXzKy8zLQorHx7DN1NXK0dKs1tvV2LrJy5PcfN7Ipc2TudveqdSNGsLWANGo1YzR1vSk1ove+cb7+CGaUK7Pv1+htiEqqI6ajWGgwrkzxFBXN4ScwvmZWNEiNYibNG5E19HXxVwZlSH6WNJjM4yVmK182bIhTZSaRBpiWbMWtQPfLOncebPnSXOOhhJl1tMmU5ziVC7iaZQqJaWHqNY8GpVP0qJbrX71ek9rS2oXgjLCesgg2LNgrRuxpej2aVOta8ctq7uuI15FepnqLfkWcOC9gyuaNXyY3DjChT+ZfOvXrtpNky1D3guwWGbOcDVD1RSvmZiwoEFaMna0YATKo2mVhn3MLExKNFi3rt0MKDvSuvu6tN15da4kjR93BO4zeTUlPZk3nR7bEfXrtaRjjy57+3Tj3puCD9/S0KtG5KOvupe+pp/1/dqXNA8/kfzl7wmhv1+Qvqf4/GXjHybnEdNJJIEAADs=\""
         " align=\"right\" alt=\"4D logo\" border=\"0\">", 
         SG(request_info).request_uri ? SG(request_info).request_uri : ""
     );
