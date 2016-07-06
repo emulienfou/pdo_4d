@@ -90,18 +90,11 @@ PHP_INI_END()
 PHP_MINIT_FUNCTION(pdo_4d)
 {
 	REGISTER_INI_ENTRIES();
-	/* add your stuff here */
-	
-	/* register 4d pdo driver */
-	if (FAILURE == php_pdo_register_driver(&pdo_4d_driver)) {
-/*		fprintf(stderr,"Error on register pdo-4d driver\n"); */
-		return FAILURE;
-  }
-  /* fprintf(stderr,"Registering pdo-4d driver OK\n"); **/
+
 	REGISTER_PDO_CLASS_CONST_LONG("FOURD_ATTR_CHARSET", (long)PDO_FOURD_ATTR_CHARSET);
 	REGISTER_PDO_CLASS_CONST_LONG("FOURD_ATTR_PREFERRED_IMAGE_TYPES", (long)PDO_FOURD_ATTR_PREFERRED_IMAGE_TYPES);
 
-	return SUCCESS;
+	return php_pdo_register_driver(&pdo_4d_driver);
 }
 /* }}} */
 
