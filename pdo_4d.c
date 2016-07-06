@@ -164,7 +164,7 @@ PHP_MINFO_FUNCTION(pdo_4d)
     DISPLAY_INI_ENTRIES();
     
     php_info_print_box_start(0);
-    php_printf("This program makes use of the 4D SQL protocol: 4D v11 and up, Copyright (c) 2016 4D");
+    php_printf("This program makes use of the 4D SQL protocol: 4D v12 and up, Copyright (c) 2016 4D");
     php_printf( 
   	"<a href=\"http://www.4d.com\" target=\"_blank\">"
         "<img src=\"data:image/gif;base64,R0lGODlhIAAgAOYAAHl5kiU8dcTH16mns+zq6vv7+7WzvEtUg3h7o9PX49va3OXk5DxLgJ2cqnR0jpSTpdPR1GJkhYeHpzNFfKSjr3mIq7y6wkdSg1RZgmxsiSxAeMXDylpegpycuk5Ue11gh1VolWV3n0VNdoSEmvLx8Pb29lVZfezs8ouKnqStxYuNsGlskjhIfoyYt8vJzmBkjdTT2YKBljJCdKu0y0FOgsLBx6GfrL2+0eLg4a+uuGlph8C+xc/O0+Tl7bK6z1RbiLOxvrzD1cjGzPLz9+7t7d7i6pWgvH9+lZqZqZWUro+Oo7y7ytnX2uTi4k9WgzhFdEldjefm5vPy8mZojIiHm5eWpVleiUVai97d4bGxyD5JdmZnhrm3vpiXqeHg5OTj5eno6PT2+NfV1o+Nnt7d3fDv7zlGeK6tw3Bwjvj4+M7M0E5WhpKQoV9hgvj398rQ3kxgjzBHfvj5+ebp7+7w9FxumeHg4D9Uh1Bjkpulv/Tz8/r4+P///0NQhB84c////yH5BAEAAH8ALAAAAAAgACAAAAe2gH9/foSFhoeIiYKDiY2Oh4yPko2Rk5aXmIV9m5mSm5+XfKKjfJqfp5akqqOnoJOiiH2qra+wpp+kqI+kt6e5nI6qhK2+oq6JsKN+xMXGfY22rMy40tCF0tOb1Yil187Zss7ch9jZ297k3+bi3qur63zAfu7009iP2urM943U8fC6Evn7RyyCvkY0Bu7T90xgnyT0ZjHrB66ivEMWLTrMCG4jx2mVhn2c5kcQxpHESi4K2anQykAAOw==\""
