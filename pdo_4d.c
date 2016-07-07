@@ -147,7 +147,7 @@ PHP_MINFO_FUNCTION(pdo_4d)
         "Alter Way (http://www.alterway.fr)"
     );
     php_info_print_table_row(2, "Maintainers", 
-        "Thomas Pulzer <t.pulzer@kniel.de, David Sanchez <david38sanchez@gmail.com>"
+        "Thomas Pulzer <t.pulzer@kniel.de>, David Sanchez <david38sanchez@gmail.com>"
     );
     php_info_print_table_end();
 
